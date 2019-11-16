@@ -1,4 +1,4 @@
-package com.prinzbach.kloudassistant.pullrequest.application
+package com.prinzbach.kloudassistant.pullrequest.application.github
 
 import com.fasterxml.jackson.annotation.JsonCreator
 
