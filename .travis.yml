@@ -1,0 +1,30 @@
+language: java
+jdk:
+  - openjdk8
+services:
+  - docker
+matrix:
+  fast_finish: true
+
+env:
+  global:
+    - IMAGE_NAME=joachimprinzbach/kloud-assistant
+
+before_install:
+  - chmod +x gradlew
+
+script:
+  - ./gradlew build
+  - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  - export TAG=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$BRANCH-$COMMIT"; fi | sed 's/\//-/')
+  - docker build . -t $IMAGE_NAME:latest
+  - if [ $BRANCH = "master" ]; then docker tag $IMAGE_NAME:latest $IMAGE_NAME:master; fi
+  - docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
+  - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  - docker push $IMAGE_NAME:latest
+  - if [ $BRANCH = "master" ]; then docker push $IMAGE_NAME:master; fi
+  - docker push $IMAGE_NAME:$TAG
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
